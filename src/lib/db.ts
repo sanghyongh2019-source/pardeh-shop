@@ -81,9 +81,10 @@ CREATE TABLE IF NOT EXISTS visualization_requests (
 `);
 
 function seedIfEmpty() {
-  const count = db.prepare("SELECT COUNT(*) as c FROM products").get() as { c: number };
-  if (count.c > 0) return;
-
+  // Next.js's build step evaluates این ماژول را از چند worker موازی import
+  // می‌کند، پس چند فرآیند ممکن است هم‌زمان seedIfEmpty را صدا بزنند. برای
+  // جلوگیری از race condition، همه‌ی کار (چک + insert) داخل یک تراکنش
+  // immediate انجام می‌شود و خطای رقابتی احتمالی نادیده گرفته می‌شود.
   const products = [
     {
       slug: "classic-golden-pleat",
@@ -149,6 +150,9 @@ function seedIfEmpty() {
   );
 
   const tx = db.transaction(() => {
+    const count = db.prepare("SELECT COUNT(*) as c FROM products").get() as { c: number };
+    if (count.c > 0) return;
+
     for (const p of products) {
       const id = randomUUID();
       insertProduct.run({
@@ -167,7 +171,14 @@ function seedIfEmpty() {
       }
     }
   });
-  tx();
+
+  try {
+    tx.immediate();
+  } catch (e) {
+    // یک فرآیند موازی دیگر (مثلاً worker دیگری از مرحله‌ی build نکست‌جی‌اس)
+    // همین الان seed را انجام داده؛ این خطا بی‌ضرر است.
+    console.warn("seed skipped (likely already seeded concurrently):", (e as Error).message);
+  }
 }
 
 seedIfEmpty();
