@@ -6,15 +6,26 @@ import { randomUUID } from "crypto";
 // یک نمونه singleton از دیتابیس SQLite. برای پروداکشن واقعی، این باید با
 // Postgres/MySQL و یک ORM (Prisma/Drizzle) جایگزین شود؛ اینجا برای نسخه‌ی
 // آزمایشی، یک فایل SQLite ساده و بدون وابستگی به سرویس بیرونی استفاده شده.
-const dataDir = path.join(process.cwd(), "data");
-fs.mkdirSync(dataDir, { recursive: true });
-const dbPath = path.join(dataDir, "app.db");
-const db = new Database(dbPath, { timeout: 10000 });
-db.pragma("busy_timeout = 10000");
-db.pragma("journal_mode = WAL");
-db.pragma("foreign_keys = ON");
+//
+// نکته‌ی مهم: اتصال به دیتابیس lazy است (فقط با اولین استفاده‌ی واقعی باز
+// می‌شود)، نه در زمان import شدن این فایل. دلیل: مرحله‌ی «Collecting page
+// data» در Next.js این ماژول را در چندین worker فرآیند موازی صرفاً import
+// می‌کند (بدون اجرای واقعی هندلرها)؛ اگر اتصال/pragma/seed در سطح بالای
+// فایل اجرا شود، چند فرآیند هم‌زمان قفل انحصاری روی همان فایل SQLite
+// می‌خواهند و build با خطای SQLITE_BUSY شکست می‌خورد.
+let realDb: Database.Database | null = null;
 
-db.exec(`
+function initDb(): Database.Database {
+  const dataDir = path.join(process.cwd(), "data");
+  fs.mkdirSync(dataDir, { recursive: true });
+  const dbPath = path.join(dataDir, "app.db");
+
+  const database = new Database(dbPath, { timeout: 10000 });
+  database.pragma("busy_timeout = 10000");
+  database.pragma("journal_mode = WAL");
+  database.pragma("foreign_keys = ON");
+
+  database.exec(`
 CREATE TABLE IF NOT EXISTS products (
   id TEXT PRIMARY KEY,
   slug TEXT UNIQUE NOT NULL,
@@ -79,13 +90,19 @@ CREATE TABLE IF NOT EXISTS visualization_requests (
   resultPath TEXT NOT NULL,
   createdAt TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+  id TEXT PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  createdAt TEXT NOT NULL
+);
 `);
 
-function seedIfEmpty() {
-  // Next.js's build step evaluates این ماژول را از چند worker موازی import
-  // می‌کند، پس چند فرآیند ممکن است هم‌زمان seedIfEmpty را صدا بزنند. برای
-  // جلوگیری از race condition، همه‌ی کار (چک + insert) داخل یک تراکنش
-  // immediate انجام می‌شود و خطای رقابتی احتمالی نادیده گرفته می‌شود.
+  seedIfEmpty(database);
+  return database;
+}
+
+function seedIfEmpty(database: Database.Database) {
   const products = [
     {
       slug: "classic-golden-pleat",
@@ -142,16 +159,16 @@ function seedIfEmpty() {
     },
   ];
 
-  const insertProduct = db.prepare(
+  const insertProduct = database.prepare(
     `INSERT INTO products (id, slug, name, category, description, basePrice, fabricType, lightBlock, createdAt)
      VALUES (@id, @slug, @name, @category, @description, @basePrice, @fabricType, @lightBlock, @createdAt)`
   );
-  const insertColor = db.prepare(
+  const insertColor = database.prepare(
     `INSERT INTO colors (id, productId, name, hex) VALUES (@id, @productId, @name, @hex)`
   );
 
-  const tx = db.transaction(() => {
-    const count = db.prepare("SELECT COUNT(*) as c FROM products").get() as { c: number };
+  const tx = database.transaction(() => {
+    const count = database.prepare("SELECT COUNT(*) as c FROM products").get() as { c: number };
     if (count.c > 0) return;
 
     for (const p of products) {
@@ -176,12 +193,25 @@ function seedIfEmpty() {
   try {
     tx.immediate();
   } catch (e) {
-    // یک فرآیند موازی دیگر (مثلاً worker دیگری از مرحله‌ی build نکست‌جی‌اس)
-    // همین الان seed را انجام داده؛ این خطا بی‌ضرر است.
+    // یک فرآیند موازی دیگر همین الان seed را انجام داده؛ بی‌ضرر است.
     console.warn("seed skipped (likely already seeded concurrently):", (e as Error).message);
   }
 }
 
-seedIfEmpty();
+function ensureDb(): Database.Database {
+  if (!realDb) realDb = initDb();
+  return realDb;
+}
+
+// یک Proxy که فقط با اولین دسترسی واقعی (db.prepare(...)، db.exec(...) و...)
+// اتصال را باز می‌کند؛ همه‌ی جاهای دیگر کد بدون تغییر db.prepare/db.exec را
+// صدا می‌زنند و از این lazy-init بی‌خبرند.
+const db = new Proxy({} as Database.Database, {
+  get(_target, prop, receiver) {
+    const instance = ensureDb();
+    const value = Reflect.get(instance, prop, instance);
+    return typeof value === "function" ? value.bind(instance) : value;
+  },
+});
 
 export default db;

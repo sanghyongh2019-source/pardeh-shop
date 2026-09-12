@@ -3,14 +3,6 @@ import { z } from "zod";
 import db from "@/lib/db";
 import { randomUUID } from "crypto";
 
-db.exec(`
-CREATE TABLE IF NOT EXISTS newsletter_subscribers (
-  id TEXT PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  createdAt TEXT NOT NULL
-);
-`);
-
 const schema = z.object({ email: z.string().email() });
 
 export async function POST(req: NextRequest) {

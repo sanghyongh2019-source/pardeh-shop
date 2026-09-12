@@ -20,6 +20,10 @@ import TestimonialsCarousel from "@/components/TestimonialsCarousel";
 import FaqAccordion from "@/components/FaqAccordion";
 import Newsletter from "@/components/Newsletter";
 
+// این صفحه باید همیشه از دیتابیس در حال اجرا (روی volume runtime) خوانده
+// شود، نه این‌که در زمان build به‌صورت استاتیک freeze شود.
+export const dynamic = "force-dynamic";
+
 async function getProducts(): Promise<Product[]> {
   const rows = db.prepare("SELECT * FROM products ORDER BY createdAt ASC").all() as any[];
   const colorStmt = db.prepare("SELECT id, name, hex FROM colors WHERE productId = ?");
