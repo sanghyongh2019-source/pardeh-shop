@@ -3,16 +3,23 @@
 :root {
   --ink: #1E1A16;
   --charcoal: #2A241F;
+  --charcoal-2: #322A22;
   --sand: #EDE3CF;
+  --sand-2: #E4D6B8;
   --brass: #B98A44;
+  --brass-light: #D2A868;
   --brass-deep: #8C6529;
   --burgundy: #6E2A34;
+  --burgundy-light: #8A3A46;
   --cream: #F6F0E4;
   --line: rgba(246, 240, 228, 0.14);
   --line-dark: rgba(30, 26, 22, 0.12);
+  --muted: #6b6154;
 }
 
 * { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
 
 html, body {
   background: var(--cream);
@@ -21,3 +28,66 @@ html, body {
 }
 
 a { color: inherit; }
+
+::selection { background: var(--brass); color: var(--ink); }
+
+/* ---------- reusable utility classes ---------- */
+.container-x { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+.btn-brass {
+  background: linear-gradient(135deg, var(--brass-light), var(--brass-deep));
+  color: var(--ink);
+  font-weight: 700;
+  transition: transform .18s ease, box-shadow .18s ease;
+  box-shadow: 0 8px 20px -8px rgba(140,101,41,0.55);
+}
+.btn-brass:hover { transform: translateY(-2px); box-shadow: 0 12px 26px -8px rgba(140,101,41,0.65); }
+
+.btn-outline {
+  border: 1px solid rgba(246,240,228,.35);
+  color: var(--cream);
+  transition: background .18s ease, color .18s ease;
+}
+.btn-outline:hover { background: rgba(246,240,228,.12); }
+
+.card-lift { transition: transform .25s ease, box-shadow .25s ease; }
+.card-lift:hover { transform: translateY(-6px); box-shadow: 0 20px 40px -20px rgba(30,26,22,0.35); }
+
+.fade-up {
+  animation: fadeUp .7s ease both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.pleat-fold {
+  background: repeating-linear-gradient(
+    100deg,
+    rgba(0,0,0,0.34) 0px,
+    rgba(0,0,0,0.10) 26px,
+    rgba(255,255,255,0.07) 52px,
+    rgba(0,0,0,0.30) 78px
+  );
+}
+
+.shimmer-badge {
+  background: linear-gradient(120deg, var(--brass-deep), var(--brass-light), var(--brass-deep));
+  background-size: 200% 100%;
+  animation: shimmer 3.5s linear infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.dotted-divider {
+  border-top: 2px dotted var(--line-dark);
+}
+
+.section-eyebrow {
+  letter-spacing: .4px;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--brass-deep);
+}

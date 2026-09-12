@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import db from "@/lib/db";
 import { Product } from "@/lib/types";
 import Customizer from "@/components/Customizer";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 async function getProduct(slug: string): Promise<Product | null> {
   const p = db.prepare("SELECT * FROM products WHERE slug = ?").get(slug) as any;
@@ -20,8 +22,12 @@ export default async function CustomizePage({
   if (!product) notFound();
 
   return (
-    <main className="max-w-6xl mx-auto px-7 py-14">
-      <Customizer product={product} />
+    <main>
+      <Header />
+      <div className="container-x py-14">
+        <Customizer product={product} />
+      </div>
+      <Footer />
     </main>
   );
 }
