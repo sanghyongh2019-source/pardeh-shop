@@ -9,7 +9,8 @@ import { randomUUID } from "crypto";
 const dataDir = path.join(process.cwd(), "data");
 fs.mkdirSync(dataDir, { recursive: true });
 const dbPath = path.join(dataDir, "app.db");
-const db = new Database(dbPath);
+const db = new Database(dbPath, { timeout: 10000 });
+db.pragma("busy_timeout = 10000");
 db.pragma("journal_mode = WAL");
 db.pragma("foreign_keys = ON");
 
