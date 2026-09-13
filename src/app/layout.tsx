@@ -1,9 +1,13 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "پرده‌سرا | پرده تخصصی و سفارشی",
   description: "پرده تخصصی با سفارشی‌سازی زنده، پیش‌نمایش هوشمند و فروش اقساطی",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#14100C",
 };
 
 export default function RootLayout({
