@@ -31,7 +31,7 @@ export default async function OrderPage({
         <div className="border p-6 mb-6" style={{ borderColor: "var(--line-dark)" }}>
           {items.map((it) => (
             <div key={it.id} className="flex justify-between text-sm py-3 border-b" style={{ borderColor: "var(--line-dark)" }}>
-              <span>رنگ {it.colorName} — دوخت {it.seamType} — عرض {it.widthCm} سانتی‌متر</span>
+              <span>رنگ {it.colorName} — دوخت {it.seamType} — بافت {it.texture} — عرض {it.widthCm} سانتی‌متر</span>
               <span className="font-bold">{it.unitPrice.toLocaleString("fa-IR")} تومان</span>
             </div>
           ))}

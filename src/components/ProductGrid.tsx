@@ -33,9 +33,10 @@ export default function ProductGrid({ products }: { products: Product[] }) {
             onClick={() => setCategory(c)}
             className="px-4 py-2 text-sm rounded-full border transition-colors"
             style={{
-              borderColor: "var(--line-dark)",
-              background: category === c ? "var(--ink)" : "transparent",
-              color: category === c ? "var(--cream)" : "inherit",
+              borderColor: category === c ? "transparent" : "var(--line-dark)",
+              background: category === c ? "var(--brass)" : "transparent",
+              color: category === c ? "var(--ink)" : "inherit",
+              fontWeight: category === c ? 700 : 500,
             }}
           >
             {CATEGORY_LABELS[c] ?? c}
@@ -53,7 +54,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
             <div
               key={p.id}
               className="card-lift border relative overflow-hidden fade-up"
-              style={{ borderColor: "var(--line-dark)", background: "var(--cream)", animationDelay: `${i * 60}ms` }}
+              style={{ borderColor: "var(--line-dark)", background: "var(--surface)", animationDelay: `${i * 60}ms` }}
             >
               {badge && (
                 <span
@@ -66,7 +67,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
               <button
                 onClick={() => setLiked((s) => ({ ...s, [p.id]: !s[p.id] }))}
                 className="absolute top-3 left-3 z-10 w-8 h-8 rounded-full flex items-center justify-center"
-                style={{ background: "rgba(246,240,228,.9)" }}
+                style={{ background: "rgba(20,16,12,.75)" }}
                 aria-label="علاقه‌مندی"
               >
                 <Heart

@@ -21,6 +21,7 @@ export interface OrderItemInput {
   colorName: string;
   colorHex: string;
   seamType: "پرچین" | "پیلی‌دار" | "حلقه‌ای";
+  texture: "ساده" | "بافت‌دار" | "مخملی";
   widthCm: number;
   lightBlockPct: number;
   quantity?: number;

@@ -17,6 +17,7 @@ const orderSchema = z.object({
         colorName: z.string(),
         colorHex: z.string(),
         seamType: z.enum(["پرچین", "پیلی‌دار", "حلقه‌ای"]),
+        texture: z.enum(["ساده", "بافت‌دار", "مخملی"]).default("ساده"),
         widthCm: z.number().int().positive(),
         lightBlockPct: z.number().int().min(0).max(100),
         quantity: z.number().int().positive().default(1),
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
   const itemsWithPrice = data.items.map((item) => {
     const product = productStmt.get(item.productId) as any;
     if (!product) throw new Error(`محصول با شناسه‌ی ${item.productId} پیدا نشد.`);
-    const unitPrice = computeUnitPrice(product.basePrice, item.widthCm, item.seamType);
+    const unitPrice = computeUnitPrice(product.basePrice, item.widthCm, item.seamType, item.texture);
     return { ...item, unitPrice, quantity: item.quantity ?? 1 };
   });
 
@@ -72,8 +73,8 @@ export async function POST(req: NextRequest) {
      VALUES (@id, @customerName, @customerPhone, @customerAddress, @totalAmount, @paymentType, 'pending_payment', @createdAt)`
   );
   const insertItem = db.prepare(
-    `INSERT INTO order_items (id, orderId, productId, colorName, colorHex, seamType, widthCm, lightBlockPct, unitPrice, quantity)
-     VALUES (@id, @orderId, @productId, @colorName, @colorHex, @seamType, @widthCm, @lightBlockPct, @unitPrice, @quantity)`
+    `INSERT INTO order_items (id, orderId, productId, colorName, colorHex, seamType, texture, widthCm, lightBlockPct, unitPrice, quantity)
+     VALUES (@id, @orderId, @productId, @colorName, @colorHex, @seamType, @texture, @widthCm, @lightBlockPct, @unitPrice, @quantity)`
   );
   const insertPlan = db.prepare(
     `INSERT INTO installment_plans (id, orderId, totalAmount, downPayment, months, monthlyAmount, interestRate, schedule, provider, createdAt)

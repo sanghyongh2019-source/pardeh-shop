@@ -89,8 +89,8 @@ export default async function Home() {
           <div className="relative">
             <div className="pleat-fold h-72 md:h-96 rounded-sm" style={{ background: "var(--brass-deep)" }} />
             <div
-              className="absolute -bottom-6 -right-4 md:right-6 bg-white rounded-sm shadow-xl px-5 py-4 flex items-center gap-3"
-              style={{ background: "var(--cream)" }}
+              className="absolute -bottom-6 -right-4 md:right-6 rounded-sm shadow-xl px-5 py-4 flex items-center gap-3"
+              style={{ background: "var(--cream)", color: "var(--ink)" }}
             >
               <div className="flex -space-x-1">
                 {Array.from({ length: 5 }).map((_, i) => (
@@ -99,7 +99,7 @@ export default async function Home() {
               </div>
               <div className="text-xs font-bold leading-tight">
                 ۴.۸ از ۵<br />
-                <span style={{ color: "var(--muted)" }} className="font-normal">رضایت مشتریان</span>
+                <span style={{ color: "#6b6154" }} className="font-normal">رضایت مشتریان</span>
               </div>
             </div>
           </div>
@@ -145,7 +145,7 @@ export default async function Home() {
               <div key={i} className="relative fade-up" style={{ animationDelay: `${i * 100}ms` }}>
                 <div
                   className="w-14 h-14 rounded-full flex items-center justify-center mb-5"
-                  style={{ background: "var(--ink)", color: "var(--cream)" }}
+                  style={{ background: "var(--brass)", color: "var(--ink)" }}
                 >
                   <s.icon size={22} />
                 </div>

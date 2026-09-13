@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS colors (
   name TEXT NOT NULL,
   hex TEXT NOT NULL
 );
+CREATE UNIQUE INDEX IF NOT EXISTS idx_colors_product_hex ON colors(productId, hex);
 
 CREATE TABLE IF NOT EXISTS orders (
   id TEXT PRIMARY KEY,
@@ -63,6 +64,7 @@ CREATE TABLE IF NOT EXISTS order_items (
   colorName TEXT NOT NULL,
   colorHex TEXT NOT NULL,
   seamType TEXT NOT NULL,
+  texture TEXT NOT NULL DEFAULT 'ساده',
   widthCm INTEGER NOT NULL,
   lightBlockPct INTEGER NOT NULL,
   unitPrice INTEGER NOT NULL,
@@ -98,67 +100,83 @@ CREATE TABLE IF NOT EXISTS newsletter_subscribers (
 );
 `);
 
+  // migration ایمن برای دیتابیس‌هایی که قبل از افزودن ستون texture ساخته شده‌اند.
+  try {
+    database.exec(`ALTER TABLE order_items ADD COLUMN texture TEXT NOT NULL DEFAULT 'ساده'`);
+  } catch {
+    // ستون از قبل وجود دارد؛ مشکلی نیست.
+  }
+
   seedIfEmpty(database);
+  syncColors(database);
   return database;
 }
 
-function seedIfEmpty(database: Database.Database) {
-  const products = [
-    {
-      slug: "classic-golden-pleat",
-      name: "پرده پرچینی طلایی",
-      category: "classic",
-      description: "افت سنگین و کلاسیک، مناسب پذیرایی و اتاق نشیمن رسمی.",
-      basePrice: 8_500_000,
-      fabricType: "پارچه ژاکارد سنگین",
-      lightBlock: "کم",
-      colors: [
-        { name: "طلایی برنزی", hex: "#B98A44" },
-        { name: "زرشکی", hex: "#6E2A34" },
-        { name: "زغالی", hex: "#2A241F" },
-      ],
-    },
-    {
-      slug: "modern-two-tone",
-      name: "پرده دو رنگ شب‌گرد",
-      category: "modern",
-      description: "افت صاف و مدرن با دو لایه، نورگذری قابل تنظیم، مناسب اتاق کار.",
-      basePrice: 7_200_000,
-      fabricType: "پلی‌استر مات دو لایه",
-      lightBlock: "متوسط",
-      colors: [
-        { name: "زغالی", hex: "#2A241F" },
-        { name: "کرم", hex: "#EDE3CF" },
-      ],
-    },
-    {
-      slug: "natural-linen",
-      name: "پرده کتان طبیعی",
-      category: "linen",
-      description: "سبک، روشن و طبیعی؛ مناسب اتاق خواب و فضاهای آرام.",
-      basePrice: 5_400_000,
-      fabricType: "کتان خام",
-      lightBlock: "کم",
-      colors: [
-        { name: "کرم طبیعی", hex: "#EDE3CF" },
-        { name: "دودی روشن", hex: "#C9BFA8" },
-      ],
-    },
-    {
-      slug: "burgundy-velvet",
-      name: "پرده مخمل زرشکی",
-      category: "velvet",
-      description: "بلک‌اوت کامل و افت لوکس، مناسب سینمای خانگی.",
-      basePrice: 11_800_000,
-      fabricType: "مخمل ضخیم",
-      lightBlock: "بلک‌اوت",
-      colors: [
-        { name: "زرشکی", hex: "#6E2A34" },
-        { name: "زغالی", hex: "#2A241F" },
-      ],
-    },
-  ];
+const PRODUCTS_SEED = [
+  {
+    slug: "classic-golden-pleat",
+    name: "پرده پرچینی طلایی",
+    category: "classic",
+    description: "افت سنگین و کلاسیک، مناسب پذیرایی و اتاق نشیمن رسمی.",
+    basePrice: 8_500_000,
+    fabricType: "پارچه ژاکارد سنگین",
+    lightBlock: "کم",
+    colors: [
+      { name: "طلایی برنزی", hex: "#B98A44" },
+      { name: "زرشکی", hex: "#6E2A34" },
+      { name: "زغالی", hex: "#2A241F" },
+      { name: "سبز بطری", hex: "#3B4A34" },
+      { name: "آبی سرمه‌ای", hex: "#26344A" },
+    ],
+  },
+  {
+    slug: "modern-two-tone",
+    name: "پرده دو رنگ شب‌گرد",
+    category: "modern",
+    description: "افت صاف و مدرن با دو لایه، نورگذری قابل تنظیم، مناسب اتاق کار.",
+    basePrice: 7_200_000,
+    fabricType: "پلی‌استر مات دو لایه",
+    lightBlock: "متوسط",
+    colors: [
+      { name: "زغالی", hex: "#2A241F" },
+      { name: "کرم", hex: "#EDE3CF" },
+      { name: "دودی", hex: "#5B564D" },
+      { name: "آبی دودی", hex: "#3A4652" },
+    ],
+  },
+  {
+    slug: "natural-linen",
+    name: "پرده کتان طبیعی",
+    category: "linen",
+    description: "سبک، روشن و طبیعی؛ مناسب اتاق خواب و فضاهای آرام.",
+    basePrice: 5_400_000,
+    fabricType: "کتان خام",
+    lightBlock: "کم",
+    colors: [
+      { name: "کرم طبیعی", hex: "#EDE3CF" },
+      { name: "دودی روشن", hex: "#C9BFA8" },
+      { name: "خاکی", hex: "#B9A582" },
+      { name: "سفید استخوانی", hex: "#E9E2D3" },
+    ],
+  },
+  {
+    slug: "burgundy-velvet",
+    name: "پرده مخمل زرشکی",
+    category: "velvet",
+    description: "بلک‌اوت کامل و افت لوکس، مناسب سینمای خانگی.",
+    basePrice: 11_800_000,
+    fabricType: "مخمل ضخیم",
+    lightBlock: "بلک‌اوت",
+    colors: [
+      { name: "زرشکی", hex: "#6E2A34" },
+      { name: "زغالی", hex: "#2A241F" },
+      { name: "سرمه‌ای", hex: "#1F2A3D" },
+      { name: "سبز جنگلی", hex: "#243627" },
+    ],
+  },
+];
 
+function seedIfEmpty(database: Database.Database) {
   const insertProduct = database.prepare(
     `INSERT INTO products (id, slug, name, category, description, basePrice, fabricType, lightBlock, createdAt)
      VALUES (@id, @slug, @name, @category, @description, @basePrice, @fabricType, @lightBlock, @createdAt)`
@@ -171,7 +189,7 @@ function seedIfEmpty(database: Database.Database) {
     const count = database.prepare("SELECT COUNT(*) as c FROM products").get() as { c: number };
     if (count.c > 0) return;
 
-    for (const p of products) {
+    for (const p of PRODUCTS_SEED) {
       const id = randomUUID();
       insertProduct.run({
         id,
@@ -195,6 +213,32 @@ function seedIfEmpty(database: Database.Database) {
   } catch (e) {
     // یک فرآیند موازی دیگر همین الان seed را انجام داده؛ بی‌ضرر است.
     console.warn("seed skipped (likely already seeded concurrently):", (e as Error).message);
+  }
+}
+
+// بر خلاف seedIfEmpty (که فقط یک بار در طول عمر دیتابیس اجرا می‌شود)، این تابع
+// هر بار در init اجرا می‌شود تا رنگ‌های جدیدی که بعداً به PRODUCTS_SEED اضافه
+// می‌شوند، حتی روی دیتابیسی که قبلاً seed شده هم اعمال شوند.
+function syncColors(database: Database.Database) {
+  const getProductId = database.prepare("SELECT id FROM products WHERE slug = ?");
+  const insertColor = database.prepare(
+    `INSERT OR IGNORE INTO colors (id, productId, name, hex) VALUES (@id, @productId, @name, @hex)`
+  );
+
+  const tx = database.transaction(() => {
+    for (const p of PRODUCTS_SEED) {
+      const row = getProductId.get(p.slug) as { id: string } | undefined;
+      if (!row) continue;
+      for (const c of p.colors) {
+        insertColor.run({ id: randomUUID(), productId: row.id, name: c.name, hex: c.hex });
+      }
+    }
+  });
+
+  try {
+    tx.immediate();
+  } catch (e) {
+    console.warn("color sync skipped (likely concurrent):", (e as Error).message);
   }
 }
 

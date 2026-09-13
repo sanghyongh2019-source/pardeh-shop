@@ -17,7 +17,7 @@ export default function Header() {
   return (
     <header
       className="sticky top-0 z-50 backdrop-blur border-b"
-      style={{ background: "rgba(246,240,228,0.92)", borderColor: "var(--line-dark)" }}
+      style={{ background: "rgba(20,16,12,0.85)", borderColor: "var(--line-dark)" }}
     >
       <div className="container-x flex items-center justify-between py-4">
         <Link href="/" className="text-2xl font-black flex items-center gap-1.5" style={{ color: "var(--brass-deep)" }}>

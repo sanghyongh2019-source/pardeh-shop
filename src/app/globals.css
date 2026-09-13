@@ -1,20 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --ink: #1E1A16;
-  --charcoal: #2A241F;
-  --charcoal-2: #322A22;
-  --sand: #EDE3CF;
-  --sand-2: #E4D6B8;
-  --brass: #B98A44;
-  --brass-light: #D2A868;
-  --brass-deep: #8C6529;
-  --burgundy: #6E2A34;
-  --burgundy-light: #8A3A46;
-  --cream: #F6F0E4;
-  --line: rgba(246, 240, 228, 0.14);
-  --line-dark: rgba(30, 26, 22, 0.12);
-  --muted: #6b6154;
+  /* ---- dark-first palette ---- */
+  --bg: #14100C;          /* پس‌زمینه‌ی اصلی صفحه */
+  --ink: #0E0B08;         /* تیره‌ترین سطح، برای عناصر تاکیدی */
+  --charcoal: #1C1610;    /* سطح بخش‌های تیره (هدر/فوتر/کارت) */
+  --charcoal-2: #241C14;  /* سطح کمی روشن‌تر برای تنوع بخش‌ها */
+  --surface: #221B14;     /* پس‌زمینه‌ی کارت‌ها */
+  --sand: #241C14;        /* بخش‌های متناوب صفحه (قبلاً روشن بود، حالا سطح تیره) */
+  --sand-2: #2C2116;
+
+  --brass: #C79A55;
+  --brass-light: #E4BE84;
+  --brass-deep: #9A7434;
+
+  --burgundy: #8A3A46;
+  --burgundy-light: #A8515D;
+
+  --cream: #F5EEE0;       /* متن روشن روی پس‌زمینه‌ی تیره */
+  --muted: rgba(245, 238, 224, 0.6);
+  --line: rgba(245, 238, 224, 0.14);
+  --line-dark: rgba(245, 238, 224, 0.12);
 }
 
 * { box-sizing: border-box; }
@@ -22,8 +28,8 @@
 html { scroll-behavior: smooth; }
 
 html, body {
-  background: var(--cream);
-  color: var(--ink);
+  background: var(--bg);
+  color: var(--cream);
   font-family: 'Vazirmatn', sans-serif;
 }
 
@@ -39,23 +45,21 @@ a { color: inherit; }
   color: var(--ink);
   font-weight: 700;
   transition: transform .18s ease, box-shadow .18s ease;
-  box-shadow: 0 8px 20px -8px rgba(140,101,41,0.55);
+  box-shadow: 0 8px 24px -8px rgba(199,154,85,0.45);
 }
-.btn-brass:hover { transform: translateY(-2px); box-shadow: 0 12px 26px -8px rgba(140,101,41,0.65); }
+.btn-brass:hover { transform: translateY(-2px); box-shadow: 0 14px 32px -8px rgba(199,154,85,0.6); }
 
 .btn-outline {
-  border: 1px solid rgba(246,240,228,.35);
+  border: 1px solid rgba(245,238,224,.3);
   color: var(--cream);
   transition: background .18s ease, color .18s ease;
 }
-.btn-outline:hover { background: rgba(246,240,228,.12); }
+.btn-outline:hover { background: rgba(245,238,224,.1); }
 
 .card-lift { transition: transform .25s ease, box-shadow .25s ease; }
-.card-lift:hover { transform: translateY(-6px); box-shadow: 0 20px 40px -20px rgba(30,26,22,0.35); }
+.card-lift:hover { transform: translateY(-6px); box-shadow: 0 24px 48px -20px rgba(0,0,0,0.55); }
 
-.fade-up {
-  animation: fadeUp .7s ease both;
-}
+.fade-up { animation: fadeUp .7s ease both; }
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(18px); }
   to { opacity: 1; transform: translateY(0); }
@@ -64,10 +68,10 @@ a { color: inherit; }
 .pleat-fold {
   background: repeating-linear-gradient(
     100deg,
-    rgba(0,0,0,0.34) 0px,
-    rgba(0,0,0,0.10) 26px,
-    rgba(255,255,255,0.07) 52px,
-    rgba(0,0,0,0.30) 78px
+    rgba(0,0,0,0.42) 0px,
+    rgba(0,0,0,0.14) 26px,
+    rgba(255,255,255,0.08) 52px,
+    rgba(0,0,0,0.38) 78px
   );
 }
 
@@ -81,13 +85,20 @@ a { color: inherit; }
   100% { background-position: 200% 0; }
 }
 
-.dotted-divider {
-  border-top: 2px dotted var(--line-dark);
+.glow-brass {
+  box-shadow: 0 0 0 1px rgba(199,154,85,.25), 0 20px 60px -20px rgba(199,154,85,.35);
 }
+
+.dotted-divider { border-top: 2px dotted var(--line-dark); }
 
 .section-eyebrow {
   letter-spacing: .4px;
   font-weight: 700;
   font-size: 13px;
-  color: var(--brass-deep);
+  color: var(--brass);
+}
+
+.grain-bg {
+  background-image: radial-gradient(rgba(245,238,224,0.035) 1px, transparent 1px);
+  background-size: 3px 3px;
 }

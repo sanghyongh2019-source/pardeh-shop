@@ -121,7 +121,7 @@ export default function VisualizePage() {
                 if (p?.colors[0]) setColorHex(p.colors[0].hex);
               }}
               className="w-full mb-6 px-3 py-2.5 border text-sm rounded-sm"
-              style={{ borderColor: "var(--line-dark)" }}
+              style={{ borderColor: "var(--line-dark)", background: "var(--surface)", color: "var(--cream)" }}
             >
               {products.map((p) => (
                 <option key={p.slug} value={p.slug}>{p.name}</option>
@@ -137,7 +137,7 @@ export default function VisualizePage() {
                       key={c.id}
                       onClick={() => setColorHex(c.hex)}
                       className="w-9 h-9 rounded-full border-2"
-                      style={{ background: c.hex, borderColor: c.hex === colorHex ? "var(--ink)" : "transparent" }}
+                      style={{ background: c.hex, borderColor: c.hex === colorHex ? "var(--brass)" : "transparent" }}
                     />
                   ))}
                 </div>
